@@ -56,22 +56,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	/************  SHOW INITIAL CONTENT  ************/
 
-	// Convert the time remaining in seconds to minutes and seconds, and pad the numbers with zeros if needed
-	const minutes = Math.floor(quiz.timeRemaining / 60)
-		.toString()
-		.padStart(2, "0");
-	const seconds = (quiz.timeRemaining % 60).toString().padStart(2, "0");
-
 	// Display the time remaining in the time remaining container
 	const timeRemainingContainer = document.getElementById("timeRemaining");
-	timeRemainingContainer.innerText = `${minutes}:${seconds}`;
+	// timeRemainingContainer.innerText = `${minutes}:${seconds}`;
+	function updateTimer() {
+		const minutes = Math.floor(quiz.timeRemaining / 60)
+			.toString()
+			.padStart(2, "0");
+		const seconds = (quiz.timeRemaining % 60).toString().padStart(2, "0");
+
+		cronometer.innerText = `${minutes}:${seconds}`;
+	}
 
 	// Show first question
 	showQuestion();
 
+	const cronometer = document.querySelector("#timeRemaining");
+	updateTimer();
+
 	/************  TIMER  ************/
 
-	let timer;
+	timer = setInterval(() => {
+		quiz.timeRemaining--;
+		updateTimer();
+
+		if (quiz.timeRemaining <= 0) {
+			clearInterval(timer);
+			showResults();
+		}
+	}, 1000);
 
 	/************  EVENT LISTENERS  ************/
 
@@ -163,7 +176,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		//  You can use check which choice was selected by checking if the `.checked` property is true.
 
 		allChoices.forEach((element) => {
-			console.log(element);
 			if (element.checked === true) {
 				selectedAnswer = element.value;
 			}
@@ -194,6 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		// 3. Update the result container (div#result) inner text to show the number of correct answers out of total questions
 		resultContainer.innerText = `You scored ${quiz.correctAnswers} out of ${quiz.questions.length} correct answers!`; // This value is hardcoded as a placeholder
+		clearInterval(timer);
 	}
 
 	const btn = document.getElementById("restartButton");
@@ -205,6 +218,17 @@ document.addEventListener("DOMContentLoaded", () => {
 		quiz.correctAnswers = 0;
 		quiz.shuffleQuestions();
 		showQuestion();
+		quiz.timeRemaining = quiz.timeLimit;
+		updateTimer();
+
+		let timer = setInterval(() => {
+			quiz.timeRemaining--;
+			updateTimer();
+			if (quiz.timeRemaining <= 0) {
+				clearInterval(timer);
+				showResults();
+			}
+		}, 1000);
 	}
 
 	btn.addEventListener("click", restartButton);
